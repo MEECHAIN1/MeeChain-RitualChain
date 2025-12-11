@@ -1,5 +1,3 @@
-
-
 import React, { useEffect } from "react";
 import { useConnect, useAccount } from "wagmi";
 import { translations } from "../utils/translations";
@@ -73,4 +71,3 @@ export const WalletModal: React.FC<WalletModalProps> = ({
     </div>
   );
 };
-
