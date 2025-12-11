@@ -1,74 +1,43 @@
 
-import React, { useEffect } from "react";
-import { useConnect, useAccount } from "wagmi";
-import { translations } from "../utils/translations";
+import React, { useState } from 'react';
+import { useWalletClient } from 'wagmi';
+import abi from '../contracts/MeeStake.abi.json';
+import { parseEther } from 'viem';
 
-interface WalletModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConnect: (walletName: string, address?: string) => void;
-  lang: "en" | "th";
-}
+export const StakingModal: React.FC<{ contract: `0x${string}` }> = ({ contract }) => {
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const { data: walletClient } = useWalletClient();
 
-export const WalletModal: React.FC<WalletModalProps> = ({
-  isOpen,
-  onClose,
-  onConnect,
-  lang,
-}) => {
-  const { connect, connectors, error, isLoading, pendingConnector } = useConnect();
-  const { address, isConnected } = useAccount();
-  const t = translations[lang];
-
-  // เมื่อ address มีค่า ให้ส่งขึ้นไปยัง parent ผ่าน onConnect (เรียกครั้งเดียวเมื่อ address เปลี่ยน)
-  useEffect(() => {
-    if (address) {
-      onConnect("wagmi", address);
+  const doStake = async () => {
+    if (!walletClient) {
+      alert('No wallet client. Please connect wallet first.');
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address]);
 
-  if (!isOpen) return null;
+    try {
+      // Example: calling stake(uint256 amount). Adjust args to match your contract expectations.
+      const result = await (walletClient as any).writeContract({
+        address: contract,
+        abi,
+        functionName: 'stake',
+        args: [parseEther('0.001')], // stake 0.001 ETH (example)
+      });
+      setTxHash(String(result)); // result may be txHash or transaction object depending on client
+    } catch (err) {
+      console.error('Stake failed', err);
+      alert('Stake failed: ' + String(err));
+    }
+  };
 
   return (
-    <div style={{ padding: 12, border: "1px solid #ddd", background: "#fff" }}>
-      <h3>{t.wallet.title}</h3>
-
-      <div>
-        {connectors.map((connector) => (
-          <button
-            key={connector.id}
-            onClick={() => connect({ connector })}
-            disabled={!connector.ready}
-            style={{ display: "block", marginBottom: 8 }}
-          >
-            Connect {connector.name}
-            {!connector.ready ? " (not available)" : ""}
-            {isLoading && pendingConnector?.id === connector.id ? " (connecting...)" : ""}
-          </button>
-        ))}
-      </div>
-
-      <hr />
-
-      {/* Dev Connect: สำหรับ local dev (ไม่ต้องพึ่ง MetaMask/WalletConnect) */}
-      <button
-        onClick={() =>
-          onConnect(
-            "DevAccount",
-            "0x71562b71999873db5b286dF957af199Ec94617F7"
-          )
-        }
-        style={{ marginTop: 8, display: "block" }}
-      >
-        Connect Dev Account
-      </button>
-
-      {error && <div style={{ color: "red", marginTop: 8 }}>{String(error)}</div>}
-
-      <div style={{ marginTop: 12 }}>
-        <button onClick={onClose}>Close</button>
-      </div>
+    <div style={{ padding: 12, border: '1px solid #eee', background: '#fff' }}>
+      <h4>Staking</h4>
+      <button onClick={doStake}>Stake 0.001 ETH</button>
+      {txHash && (
+        <div style={{ marginTop: 8 }}>
+          Tx: <code>{txHash}</code>
+        </div>
+      )}
     </div>
   );
 };
