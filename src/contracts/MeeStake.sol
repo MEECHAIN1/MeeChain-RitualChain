@@ -1,14 +1,53 @@
-
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
-
-contract MeeStake {
-    mapping(address => uint256) public stakes;
-    event Staked(address indexed user, uint256 amount);
-
-    function stake(uint256 amount) external {
-        require(amount > 0, "amount > 0");
-        stakes[msg.sender] += amount;
-        emit Staked(msg.sender, amount);
-    }
-}
+[
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "stake",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "stakes",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "Staked",
+    "type": "event"
+  }
+]
