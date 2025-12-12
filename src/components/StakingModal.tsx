@@ -196,4 +196,3 @@ const secondaryButtonStyle: React.CSSProperties = {
 };
 
 export default StakingModal;
-export default StakingModal;
