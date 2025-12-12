@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { createPublicClient, http, parseEther, type PublicClient } from 'viem';
 import abi from '../contracts/MeeStake.abi.json';
 
@@ -15,7 +15,7 @@ type RitualContextType = {
   /**
    * read staked balance for an address
    */
-  getStakedOf: (address: `0x${string}`) => Promise<bigint | number | string>;
+  getStakedOf: (address: `0x${string}`) => Promise<bigint>;
 };
 
 const RitualContext = createContext<RitualContextType | undefined>(undefined);
@@ -30,26 +30,56 @@ export type RitualProviderProps = {
 /**
  * RitualProvider
  *
- * Props:
- * - contractAddress: deployed contract address (if null -> read-only mode)
- * - rpcUrl: RPC endpoint to create public viem client (fallback to VITE_RPC_URL)
- * - chainId: numeric chain id (fallback to VITE_CHAIN_ID or 1337)
+ * Behavior:
+ * - If contractAddress prop provided -> use it.
+ * - Otherwise try to fetch /artifacts/deploy.json at runtime and read { address }.
+ * - If that fails, fallback to import.meta.env.VITE_CONTRACT_ADDRESS (if present).
  *
  * Exposes:
  * - publicClient (viem) for read operations
  * - stake(amountEth, walletClient) for write operations (requires walletClient)
  * - getStakedOf(address) to read stake mapping
- *
- * Usage:
- * - Wrap app (or RitualPage) with <RitualProvider contractAddress={...} rpcUrl={...}>...
- * - In components, call const ritual = useRitual(); then ritual.stake('0.1', walletClient);
  */
 export const RitualProvider: React.FC<RitualProviderProps> = ({
-  contractAddress = null,
+  contractAddress: initialContractAddress = null,
   rpcUrl = (import.meta.env.VITE_RPC_URL as string) || 'http://localhost:8545',
   chainId = Number(import.meta.env.VITE_CHAIN_ID ?? 1337),
   children,
 }) => {
+  // local state for contractAddress so we can update it if we discover artifacts/deploy.json
+  const [contractAddress, setContractAddress] = useState<string | null>(() => {
+    // prefer explicit prop if provided
+    if (initialContractAddress) return initialContractAddress;
+    // otherwise try env (this will work if .env.local has VITE_CONTRACT_ADDRESS when Vite reads env)
+    const envAddr = (import.meta.env.VITE_CONTRACT_ADDRESS as string) || '';
+    return envAddr || null;
+  });
+
+  // Attempt to auto-load artifacts/deploy.json at runtime if no contractAddress yet.
+  useEffect(() => {
+    if (contractAddress) return;
+
+    let mounted = true;
+    async function tryLoadArtifact() {
+      try {
+        const res = await fetch('/artifacts/deploy.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('no artifact');
+        const json = await res.json();
+        if (mounted && json?.address) {
+          setContractAddress(String(json.address));
+          return;
+        }
+      } catch (err) {
+        // ignore — fallback to env already handled in initial state
+      }
+    }
+
+    tryLoadArtifact();
+    return () => {
+      mounted = false;
+    };
+  }, [contractAddress]);
+
   // create a stable publicClient for reads
   const publicClient = useMemo(
     () =>
@@ -74,8 +104,6 @@ export const RitualProvider: React.FC<RitualProviderProps> = ({
       throw new Error('walletClient is required to send transactions. Use wagmi useWalletClient() or pass a viem wallet client.');
     }
     const value = parseEther(String(amountEth));
-    // call contract function `stake(uint256 amount)` as in ABI
-    // Some wallet clients (viem/wagmi) return a transaction hash or a result object.
     const res = await walletClient.writeContract({
       address: contractAddress,
       abi,
@@ -86,7 +114,7 @@ export const RitualProvider: React.FC<RitualProviderProps> = ({
   };
 
   // read helper (reads mapping public function `stakes(address)`)
-  const getStakedOf = async (address: `0x${string}`) => {
+  const getStakedOf = async (address: `0x${string}`): Promise<bigint> => {
     if (!contractAddress) {
       throw new Error('Contract address is not configured in RitualProvider');
     }
@@ -96,7 +124,8 @@ export const RitualProvider: React.FC<RitualProviderProps> = ({
       functionName: 'stakes',
       args: [address],
     });
-    return res;
+    // viem returns bigint for uint256 reads
+    return res as bigint;
   };
 
   const value: RitualContextType = {
