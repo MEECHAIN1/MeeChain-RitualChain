@@ -15,8 +15,8 @@ export const WalletModal: React.FC<WalletModalProps> = ({
   onConnect,
   lang,
 }) => {
-  const { connect, connectors, error, isLoading, pendingConnector } = useConnect();
-  const { address, isConnected } = useAccount();
+  const { connect, connectors, error } = useConnect();
+  const { address } = useAccount();
   const t = translations[lang];
 
   // เมื่อ address มีค่า ให้ส่งขึ้นไปยัง parent ผ่าน onConnect (เรียกครั้งเดียวเมื่อ address เปลี่ยน)
@@ -43,7 +43,6 @@ export const WalletModal: React.FC<WalletModalProps> = ({
           >
             Connect {connector.name}
             {!connector.ready ? " (not available)" : ""}
-            {isLoading && pendingConnector?.id === connector.id ? " (connecting...)" : ""}
           </button>
         ))}
       </div>

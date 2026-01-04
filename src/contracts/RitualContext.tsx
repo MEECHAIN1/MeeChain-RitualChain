@@ -42,8 +42,8 @@ export type RitualProviderProps = {
  */
 export const RitualProvider: React.FC<RitualProviderProps> = ({
   contractAddress: initialContractAddress = null,
-  rpcUrl = (import.meta.env.VITE_RPC_URL as string) || 'http://localhost:8545',
-  chainId = Number(import.meta.env.VITE_CHAIN_ID ?? 1337),
+  rpcUrl = (import.meta.env.VITE_RPC_URL as string | undefined) || 'http://localhost:8545',
+  chainId = Number((import.meta.env.VITE_CHAIN_ID as string | undefined) ?? 1337),
   children,
 }) => {
   // local state for contractAddress so we can update it if we discover artifacts/deploy.json
@@ -51,7 +51,7 @@ export const RitualProvider: React.FC<RitualProviderProps> = ({
     // prefer explicit prop if provided
     if (initialContractAddress) return initialContractAddress;
     // otherwise try env (this will work if .env.local has VITE_CONTRACT_ADDRESS when Vite reads env)
-    const envAddr = (import.meta.env.VITE_CONTRACT_ADDRESS as string) || '';
+    const envAddr = (import.meta.env.VITE_CONTRACT_ADDRESS as string | undefined) || '';
     return envAddr || null;
   });
 
@@ -119,7 +119,7 @@ export const RitualProvider: React.FC<RitualProviderProps> = ({
       throw new Error('Contract address is not configured in RitualProvider');
     }
     const res = await publicClient.readContract({
-      address: contractAddress,
+      address: contractAddress as `0x${string}`,
       abi,
       functionName: 'stakes',
       args: [address],
@@ -132,7 +132,7 @@ export const RitualProvider: React.FC<RitualProviderProps> = ({
     contractAddress,
     rpcUrl,
     chainId,
-    publicClient,
+    publicClient: publicClient as any,
     stake,
     getStakedOf,
   };
