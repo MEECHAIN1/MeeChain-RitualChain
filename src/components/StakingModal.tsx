@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useWalletClient, useAccount } from 'wagmi';
-import { useRitual } from '../contexts/RitualContext';
+import { useRitual } from '../contracts/RitualContext';
 import { formatEther } from 'viem';
 
 type StakingModalProps = {

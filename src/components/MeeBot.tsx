@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
 const MeeBot: React.FC = () => {
-  const [messages, setMessages] = useState<string[]>([
+  const [messages] = useState<string[]>([
     'สวัสดีจาก MeeBot 👋',
     'I can help you stake and perform rituals.'
   ])
