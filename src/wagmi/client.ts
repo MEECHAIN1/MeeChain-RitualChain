@@ -4,7 +4,7 @@ import { InjectedConnector } from 'wagmi/connectors/injected';
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
 import type { Chain } from 'wagmi';
 
-const RPC = import.meta.env.ETH_RPC_URL || 'http://localhost:8545';
+const RPC = import.meta.env.ETH_RPC_URL || 'http://127.0.0.1:8545';
 const WC_PROJECT_ID = import.meta.env.WALLETCONNECT_PROJECT_ID || 'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96';
 
 // Define a local dev chain for wagmi
