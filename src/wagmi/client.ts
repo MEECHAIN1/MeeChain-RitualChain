@@ -9,10 +9,10 @@ const WC_PROJECT_ID = process.env.WALLETCONNECT_PROJECT_ID || 'c57ca95b47569778a
 
 // Define a local dev chain for wagmi
 const devChain: Chain = {
-  id: 1337,
-  name: 'Localhost',
+  id: 13390,
+  name: 'meechain ',
   network: 'dev',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  nativeCurrency: { name: 'MeeChain', symbol: 'MCB', decimals: 18 },
   rpcUrls: {
     default: { http: [RPC] },
     public: { http: [RPC] },
