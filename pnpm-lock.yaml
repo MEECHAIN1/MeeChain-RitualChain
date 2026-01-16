@@ -1,5 +1,0 @@
-# Placeholder pnpm lockfile stub. Run `pnpm install` to generate a real pnpm-lock.yaml.
-lockfileVersion: 6.0
-importers: {}
-packages: {}
-specifiers: {}
