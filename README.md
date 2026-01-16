@@ -61,31 +61,6 @@ Summoned from the deepest layer
 
 ⚙️ Build Optimization Rituals
 
-✅ Manual Chunking (vite.config.ts)
------------
-build: {
-  rollupOptions: {
-    output: {
-      manualChunks: {
-        ritualCore: [
-          '@base-org/account',
-          '@coinbase/wallet-sdk',
-          '@wagmi/connectors'
-        ],
-        uiMagic: [
-          '@reown/appkit',
-          '@reown/appkit-controllers'
-        ]
-      }
-    }
-  }
-}
---------
-✅ Deduplication
-
-resolve: {
-  dedupe: ['ox']
-}
 
 ✅ Dynamic Imports
 
